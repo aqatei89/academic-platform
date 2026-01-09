@@ -9,7 +9,7 @@
     "scripts": {
         "build": "npx prisma generate && nest build",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-        "start": "npx prisma db push && node dist/main.js",
+        "start": "npx prisma migrate deploy && node dist/main.js",
         "start:dev": "nest start --watch",
         "start:debug": "nest start --debug --watch",
         "start:prod": "node dist/main",
@@ -63,9 +63,9 @@
             "ts"
         ],
         "rootDir": "src",
-        "testRegex": ".*\\.spec\\.ts$",
+        "testRegex": ".*\.spec\.ts$",
         "transform": {
-            "^.+\\.(t|j)s$": "ts-jest"
+            "^.+\.(t|j)s$": "ts-jest"
         },
         "collectCoverageFrom": [
             "**/*.(t|j)s"
