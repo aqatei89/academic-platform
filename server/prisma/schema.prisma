@@ -1,14 +1,147 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------------------------
+// 1. Users & Identity
+// --------------------------------------------------------
+
+model User {
+  id               String   @id @default(uuid())
+  fullName         String   @map("full_name")
+  mobile           String   
+  email            String   @unique
+  country          String
+  schoolName       String?  @map("school_name")
+  academicStage    String?  @map("academic_stage") // 'Grade 12', 'Grade 11', 'Grade 10', 'Graduate', 'Uni Switch'
+  educationSystem  String?  @map("education_system") // 'SAT', 'IB', 'IG', 'Public', 'Private'
+  gpaPercentage    Decimal? @map("gpa_percentage")
+  referralSource   String?  @map("referral_source")
+  pointsBalance    Int      @default(0) @map("points_balance")
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  
+  sessions         AssessmentSession[]
+
+  @@map("users")
+}
+
+// --------------------------------------------------------
+// 2. Assessment Definitions
+// --------------------------------------------------------
+
+model AssessmentPhase {
+  id            Int String @id // 1 or 2
+  name          String
+  questionCount Int        @map("question_count")
+  costPoints    Int        @default(0) @map("cost_points")
+  
+  questions     Question[]
+
+  @@map("assessment_phases")
+}
+
+model Question {
+  id              String   @id @default(uuid())
+  phaseId         Int      @map("phase_id")
+  category        String   // 'Holland', 'Behavioral', 'Psychometric', 'Logic', 'Academic'
+  textAr          String   @map("text_ar")
+  inputType       String   @map("input_type") // 'SINGLE_SELECT', 'FORCED_TRADEOFF', 'RANKING', 'SLIDER', 'SHORT_TEXT'
+  weightingConfig Json?    @map("weighting_config")
+  active          Boolean  @default(true)
+  
+  phase           AssessmentPhase @relation(fields: [phaseId], references: [id])
+  answers         Answer[]
+
+  @@map("questions")
+}
+
+// --------------------------------------------------------
+// 3. Sessions & State
+// --------------------------------------------------------
+
+enum SessionStatus {
+  ACTIVE
+  PENDING_PAYMENT
+  COMPLETED
+}
+
+model AssessmentSession {
+  id                  String        @id @default(uuid())
+  userId              String        @map("user_id")
+  currentPhase        Int           @default(1) @map("current_phase")
+  currentQuestionIndex Int          @default(0) @map("current_question_index")
+  status              SessionStatus
+  
+  // Analysis Results
+  phaseOneDomains     Json?         @map("phase_one_domains")
+  phaseTwoMajors      Json?         @map("phase_two_majors")
+  
+  createdAt           DateTime      @default(now()) @map("created_at")
+  
+  user                User          @relation(fields: [userId], references: [id])
+  answers             Answer[]
+
+  @@map("assessment_sessions")
+}
+
+model Answer {
+  id             String   @id @default(uuid())
+  sessionId      String   @map("session_id")
+  questionId     String   @map("question_id")
+  responseValue  Json     @map("response_value")
+  responseTimeMs Int      @map("response_time_ms")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  session        AssessmentSession @relation(fields: [sessionId], references: [id])
+  question       Question          @relation(fields: [questionId], references: [id])
+
+  @@map("answers")
+}
+
+// --------------------------------------------------------
+// 4. University & Program Registry
+// --------------------------------------------------------
+
+model University {
+  id       String              @id @default(uuid())
+  nameAr   String              @map("name_ar")
+  nameEn   String              @map("name_en")
+  city     String?
+  type     String?             // 'Public', 'Private'
+  website  String?
+  
+  programs UniversityProgram[]
+
+  @@map("universities")
+}
+
+model Major {
+  id             String              @id @default(uuid())
+  nameAr         String              @map("name_ar")
+  domainCategory String?             @map("domain_category")
+  description    String?
+  
+  programs       UniversityProgram[]
+
+  @@map("majors")
+}
+
+model UniversityProgram {
+  id            String   @id @default(uuid())
+  universityId  String   @map("university_id")
+  majorId       String   @map("major_id")
+  degreeLevel   String?  @map("degree_level")
+  vectorProfile Json?    @map("vector_profile") // 0-1 scores
+  isFeatured    Boolean  @default(false) @map("is_featured")
+
+  university    University @relation(fields: [universityId], references: [id])
+  major         Major      @relation(fields: [majorId], references: [id])
+
+  @@map("university_programs")
 }
