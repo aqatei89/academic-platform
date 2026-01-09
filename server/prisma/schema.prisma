@@ -36,7 +36,7 @@ model User {
 // --------------------------------------------------------
 
 model AssessmentPhase {
-  id            Int String @id // 1 or 2
+  id            Int     @id // 1 or 2
   name          String
   questionCount Int        @map("question_count")
   costPoints    Int        @default(0) @map("cost_points")
