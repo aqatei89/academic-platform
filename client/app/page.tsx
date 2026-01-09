@@ -6,7 +6,7 @@ export default function LandingPage() {
         <div className="flex flex-col min-h-screen">
             {/* Header */}
             <header className="px-6 py-4 flex items-center justify-between border-b bg-card">
-                <div className="font-bold text-xl text-primary">مساري (Masary)</div>
+                <div className="font-bold text-xl text-primary">دليلك (Delyluk)</div>
                 <nav className="hidden md:flex gap-6 text-sm text-muted-foreground">
                     <a href="#how" className="hover:text-primary">كيف يعمل؟</a>
                     <a href="#benefits" className="hover:text-primary">المميزات</a>
@@ -76,7 +76,7 @@ export default function LandingPage() {
 
             {/* Footer */}
             <footer className="py-8 border-t text-center text-sm text-muted-foreground">
-                <p>© 2024 نظام مساري للتوجيه الأكاديمي. جميع الحقوق محفوظة.</p>
+                <p>© 2024 نظام دليلك للتوجيه الأكاديمي. جميع الحقوق محفوظة.</p>
             </footer>
         </div>
     );
